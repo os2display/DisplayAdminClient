@@ -1,13 +1,13 @@
 import { React, useEffect, useState, Fragment, useContext } from "react";
-import { Button, Row, Col } from "react-bootstrap";
+import { Button, Row, Col, Alert } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import Form from "react-bootstrap/Form";
-import FormCheckbox from "../util/forms/form-checkbox";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faExpand } from "@fortawesome/free-solid-svg-icons";
 import ContentBody from "../util/content-body/content-body";
 import MultiSelectComponent from "../util/forms/multiselect-dropdown/multi-dropdown";
-import ContentFooter from "../util/content-footer/content-footer";
 import {
   useGetV2TemplatesQuery,
   useGetV2ThemesQuery,
@@ -18,12 +18,14 @@ import ContentForm from "./content/content-form";
 import LoadingComponent from "../util/loading-component/loading-component";
 import RemoteComponentWrapper from "./preview/remote-component-wrapper";
 import FeedSelector from "./content/feed-selector";
-import RadioButtons from "../util/forms/radio-buttons";
 import SelectPlaylistsTable from "../util/multi-and-table/select-playlists-table";
 import localStorageKeys from "../util/local-storage-keys";
 import { displayError } from "../util/list/toast-component/display-toast";
 import userContext from "../../context/user-context";
 import "./slide-form.scss";
+import Preview from "../preview/preview";
+import StickyFooter from "../util/sticky-footer";
+import Select from "../util/forms/select";
 
 /**
  * The slide form component.
@@ -32,6 +34,7 @@ import "./slide-form.scss";
  * @param {object} props.slide The slide object to modify in the form.
  * @param {Function} props.handleInput Handles form input.
  * @param {Function} props.handleSubmit Handles form submit.
+ * @param {Function} props.handleSaveNoClose Handles form submit without redirecting.
  * @param {string} props.headerText Headline text.
  * @param {Function} props.handleContent Function for handling changes to content field
  * @param {Function} props.handleMedia Handle media field
@@ -49,6 +52,7 @@ function SlideForm({
   handleContent,
   handleMedia,
   handleSubmit,
+  handleSaveNoClose,
   selectTemplate,
   headerText,
   selectTheme,
@@ -59,12 +63,26 @@ function SlideForm({
   slide = null,
   mediaData = null,
 }) {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("common", { keyPrefix: "slide-form" });
   const navigate = useNavigate();
   const { config } = useContext(userContext);
 
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewLayout, setPreviewLayout] = useState("horizontal");
+  const previewOrientationOptions = [
+    {
+      value: "horizontal",
+      title: t("preview-orientation-landscape"),
+      key: "horizontal",
+    },
+    {
+      value: "vertical",
+      title: t("preview-orientation-portrait"),
+      key: "vertical",
+    },
+  ];
+  const [previewOrientation, setPreviewOrientation] = useState(
+    previewOrientationOptions[0].value
+  );
+
   const [previewOverlayVisible, setPreviewOverlayVisible] = useState(false);
   const [templateOptions, setTemplateOptions] = useState([]);
   const [contentFormElements, setContentFormElements] = useState([]);
@@ -72,6 +90,7 @@ function SlideForm({
   const [searchTextTheme, setSearchTextTheme] = useState("");
   const [selectedTemplates, setSelectedTemplates] = useState([]);
   const [themesOptions, setThemesOptions] = useState();
+  const [displayPreview, setDisplayPreview] = useState(null);
   const [templateError, setTemplateError] = useState(false);
 
   // Load templates.
@@ -88,18 +107,26 @@ function SlideForm({
     order: { createdAt: "desc" },
   });
 
-  /** Check if published is set */
-  const checkInputsHandleSubmit = () => {
+  /**
+   * Check if template is set
+   *
+   * @param {boolean | null} noRedirect Avoid close after save.
+   */
+  const checkInputsHandleSubmit = (noRedirect) => {
     setTemplateError(false);
     let submit = true;
     if (!selectedTemplate) {
       setTemplateError(true);
       submit = false;
-      displayError(t("slide-form.remember-template-error"));
+      displayError(t("remember-template-error"));
     }
 
     if (submit) {
-      handleSubmit();
+      if (noRedirect === true) {
+        handleSaveNoClose();
+      } else {
+        handleSubmit();
+      }
     }
   };
 
@@ -110,7 +137,7 @@ function SlideForm({
    * @param {string} props.key - The key input.
    */
   function downHandler({ key }) {
-    if (key === "Escape") {
+    if (key === "Escape" && previewOverlayVisible) {
       setPreviewOverlayVisible(false);
     }
   }
@@ -138,7 +165,7 @@ function SlideForm({
           setContentFormElements(data);
         })
         .catch((er) => {
-          displayError(t("slide-form.template-error"), er);
+          displayError(t("template-error"), er);
         });
 
       newSelectedTemplates.push(selectedTemplate);
@@ -164,26 +191,14 @@ function SlideForm({
   /** Get show from local storage */
   useEffect(() => {
     const localStorageShow = localStorage.getItem(localStorageKeys.PREVIEW);
-    setShowPreview(localStorageShow === "true");
-    const localStorageLayout = localStorage.getItem(
-      localStorageKeys.PREVIEW_LAYOUT
-    );
-    if (localStorageLayout) {
-      setPreviewLayout(localStorageLayout);
-    }
+    setDisplayPreview(localStorageShow === "true");
   }, []);
 
-  /**
-   * Changes the show value, and saves to localstorage
-   *
-   * @param {object} props Props.
-   * @param {boolean} props.target The returned value from the checkbox.
-   */
-  const changeShowPreview = ({ target }) => {
-    const { value } = target;
-    localStorage.setItem(localStorageKeys.PREVIEW, value);
-
-    setShowPreview(value);
+  /** Toggle display preview. */
+  const toggleDisplayPreview = () => {
+    const newValue = !displayPreview;
+    localStorage.setItem(localStorageKeys.PREVIEW, newValue);
+    setDisplayPreview(newValue);
   };
 
   /**
@@ -204,30 +219,19 @@ function SlideForm({
     setSearchTextTheme(filter);
   };
 
-  /**
-   * Change preview layout.
-   *
-   * @param {object} props The props.
-   * @param {object} props.target Event target
-   */
-  const onChangePreviewLayout = ({ target }) => {
-    setPreviewLayout(target.value);
-    localStorage.setItem(localStorageKeys.PREVIEW_LAYOUT, target.value);
-  };
-
   return (
-    <>
+    <div>
       <LoadingComponent isLoading={isLoading} loadingMessage={loadingMessage} />
       <Form>
-        <Row>
+        <Row className="m-2">
           <h1 id="slidesTitle">{headerText}</h1>
           <Col md>
             <ContentBody>
               <FormInput
                 name="title"
                 type="text"
-                label={t("slide-form.slide-name-label")}
-                helpText={t("slide-form.slide-name-placeholder")}
+                label={t("slide-name-label")}
+                helpText={t("slide-name-placeholder")}
                 value={slide.title || ""}
                 onChange={handleInput}
               />
@@ -238,8 +242,8 @@ function SlideForm({
                 templateOptions && (
                   <MultiSelectComponent
                     isLoading={loadingTemplates}
-                    label={t("slide-form.slide-template-label")}
-                    helpText={t("slide-form.slide-template-help-text")}
+                    label={t("slide-template-label")}
+                    helpText={t("slide-template-help-text")}
                     handleSelection={selectTemplate}
                     options={templateOptions}
                     selected={selectedTemplates}
@@ -255,7 +259,7 @@ function SlideForm({
                     name="selectedTemplate"
                     type="text"
                     disabled
-                    label={t("slide-form.slide-template-selected")}
+                    label={t("slide-template-selected")}
                     value={
                       selectedTemplates?.length > 0
                         ? selectedTemplates[0].title
@@ -298,84 +302,12 @@ function SlideForm({
                     </Fragment>
                   ))}
                 </ContentBody>
-                <div className="toggle-preview">
-                  <ContentBody>
-                    <h2 className="h4">
-                      {t("slide-form.preview-slide-title")}
-                    </h2>
-                    <div className="mt-2">
-                      <FormCheckbox
-                        label={t("slide-form.show-preview-label")}
-                        onChange={changeShowPreview}
-                        value={showPreview}
-                        name="show-preview"
-                      />
-                    </div>
-                    <div className="mt-2">
-                      <RadioButtons
-                        label={t("slide-form.horizontal-or-vertical-label")}
-                        selected={previewLayout}
-                        radioGroupName="vertical_horizontal"
-                        disabled={!showPreview}
-                        options={[
-                          {
-                            id: "horizontal",
-                            label: t("slide-form.horizontal-label"),
-                          },
-                          {
-                            id: "vertical",
-                            label: t("slide-form.vertical-label"),
-                          },
-                        ]}
-                        handleChange={onChangePreviewLayout}
-                      />
-                    </div>
-                    <Button
-                      variant="secondary"
-                      type="button"
-                      id="preview_slide"
-                      onClick={() =>
-                        setPreviewOverlayVisible(!previewOverlayVisible)
-                      }
-                      size="lg"
-                      className="me-3"
-                    >
-                      {t("slide-form.preview-in-full-screen")}
-                    </Button>
-                    {previewOverlayVisible && (
-                      <div
-                        onClick={() =>
-                          setPreviewOverlayVisible(!previewOverlayVisible)
-                        }
-                        role="presentation"
-                        className="preview-overlay"
-                      >
-                        {selectedTemplate?.resources?.component && (
-                          <RemoteComponentWrapper
-                            url={selectedTemplate?.resources?.component}
-                            slide={slide}
-                            mediaData={mediaData}
-                            themeData={
-                              selectedTheme?.length > 0 ? selectedTheme[0] : 0
-                            }
-                            showPreview={showPreview}
-                            orientation=""
-                            closeButton
-                            closeCallback={() =>
-                              setPreviewOverlayVisible(false)
-                            }
-                          />
-                        )}
-                      </div>
-                    )}
-                  </ContentBody>
-                </div>
               </>
             )}
             <ContentBody>
-              <h2 className="h4">{t("slide-form.add-slide-to-playlists")}</h2>
+              <h2 className="h4">{t("add-slide-to-playlists")}</h2>
               <SelectPlaylistsTable
-                helpText={t("slide-form.add-playlists-help-text")}
+                helpText={t("add-playlists-help-text")}
                 handleChange={handleInput}
                 name="playlists"
                 id={idFromUrl(slide["@id"])}
@@ -383,27 +315,25 @@ function SlideForm({
             </ContentBody>
             {config?.touchButtonRegions && (
               <ContentBody>
-                <h2 className="h4">{t("slide-form.touch-region")}</h2>
+                <h2 className="h4">{t("touch-region")}</h2>
                 <FormInput
                   name="touchRegionButtonText"
                   type="text"
-                  label={t("slide-form.touch-region-button-text-label")}
+                  label={t("touch-region-button-text-label")}
                   value={slide.content.touchRegionButtonText}
                   onChange={handleContent}
                 />
-                <small>
-                  {t("slide-form.touch-region-button-text-helptext")}
-                </small>
+                <small>{t("touch-region-button-text-helptext")}</small>
               </ContentBody>
             )}
             <ContentBody>
-              <h3 className="h4">{t("slide-form.slide-publish-title")}</h3>
+              <h3 className="h4">{t("slide-publish-title")}</h3>
               <Row className="g-2">
                 <Col md>
                   <FormInput
                     name="published.from"
                     type="datetime-local"
-                    label={t("slide-form.slide-from-label")}
+                    label={t("slide-from-label")}
                     value={slide.published.from ?? ""}
                     onChange={handleInput}
                   />
@@ -412,23 +342,23 @@ function SlideForm({
                   <FormInput
                     name="published.to"
                     type="datetime-local"
-                    label={t("slide-form.slide-to-label")}
+                    label={t("slide-to-label")}
                     value={slide.published.to ?? ""}
                     onChange={handleInput}
                   />
                 </Col>
               </Row>
               <Row>
-                <small>{t("slide-form.publish-helptext")}</small>
+                <small>{t("publish-helptext")}</small>
               </Row>
             </ContentBody>
             {themesOptions && (
               <ContentBody id="theme-section">
-                <h3 className="h4">{t("slide-form.theme")}</h3>
+                <h3 className="h4">{t("theme")}</h3>
                 <MultiSelectComponent
                   isLoading={loadingThemes}
-                  label={t("slide-form.slide-theme-label")}
-                  helpText={t("slide-form.slide-theme-help-text")}
+                  label={t("slide-theme-label")}
+                  helpText={t("slide-theme-help-text")}
                   handleSelection={selectTheme}
                   options={themesOptions}
                   selected={selectedTheme}
@@ -439,77 +369,173 @@ function SlideForm({
               </ContentBody>
             )}
           </Col>
-          {showPreview && (
+          {displayPreview && (
             <Col
-              md
-              className="responsive-side shadow-sm p-3 mb-3 bg-body rounded"
+              className="responsive-side shadow-sm p-3 mb-3 bg-body rounded me-3 sticky-top"
+              style={{ top: "20px", maxWidth: "520px" }}
             >
-              {selectedTemplate?.resources?.component && (
-                <RemoteComponentWrapper
-                  url={selectedTemplate?.resources?.component}
-                  slide={slide}
-                  mediaData={mediaData}
-                  showPreview={showPreview}
-                  themeData={selectedTheme?.length > 0 ? selectedTheme[0] : {}}
-                  orientation={previewLayout}
+              <h2 className="h4">{t("slide-preview")}</h2>
+
+              <div className="preview-actions mb-3">
+                <Select
+                  isRequired
+                  allowNull={false}
+                  onChange={({ target }) => setPreviewOrientation(target.value)}
+                  required
+                  name="preview-orientation"
+                  options={previewOrientationOptions}
+                  className="m-0"
+                  value={previewOrientation}
                 />
+
+                <Button
+                  variant="outline-secondary"
+                  type="button"
+                  id="preview_slide"
+                  onClick={() =>
+                    setPreviewOverlayVisible(!previewOverlayVisible)
+                  }
+                >
+                  <FontAwesomeIcon icon={faExpand} className="me-3" />
+                  {t("preview-in-full-screen")}
+                </Button>
+              </div>
+
+              {selectedTemplate?.resources?.component && (
+                <>
+                  {previewOrientation === "horizontal" && (
+                    <div style={{ width: "100%" }}>
+                      <RemoteComponentWrapper
+                        key="live-preview-horizontal"
+                        url={selectedTemplate?.resources?.component}
+                        slide={slide}
+                        mediaData={mediaData}
+                        showPreview={displayPreview}
+                        themeData={
+                          selectedTheme?.length > 0 ? selectedTheme[0] : {}
+                        }
+                        orientation={previewOrientation}
+                      />
+                    </div>
+                  )}
+                  {previewOrientation === "vertical" && (
+                    <div style={{ width: "56.25%" }}>
+                      <RemoteComponentWrapper
+                        key="live-preview-vertical"
+                        url={selectedTemplate?.resources?.component}
+                        slide={slide}
+                        mediaData={mediaData}
+                        showPreview={displayPreview}
+                        themeData={
+                          selectedTheme?.length > 0 ? selectedTheme[0] : {}
+                        }
+                        orientation={previewOrientation}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+              {previewOverlayVisible && (
+                <>
+                  {config?.previewClient && (
+                    <div
+                      onClick={() =>
+                        setPreviewOverlayVisible(!previewOverlayVisible)
+                      }
+                      role="presentation"
+                      className="preview-overlay d-flex justify-content-center align-items-center flex-column"
+                    >
+                      <Alert
+                        key="slide-preview-about"
+                        variant="info"
+                        className="mt-3"
+                      >
+                        {t("slide-preview-about")}
+                      </Alert>
+
+                      <Preview
+                        id={idFromUrl(slide["@id"])}
+                        mode="slide"
+                        height={previewOrientation === "horizontal" ? 540 : 960}
+                        width={previewOrientation === "horizontal" ? 960 : 540}
+                        simulatedHeight={
+                          previewOrientation === "horizontal" ? 1080 : 1920
+                        }
+                        simulatedWidth={
+                          previewOrientation === "horizontal" ? 1920 : 1080
+                        }
+                      />
+                    </div>
+                  )}
+                  {!config?.previewClient && (
+                    <div
+                      onClick={() =>
+                        setPreviewOverlayVisible(!previewOverlayVisible)
+                      }
+                      role="presentation"
+                      className="preview-overlay"
+                    >
+                      {selectedTemplate?.resources?.component && (
+                        <RemoteComponentWrapper
+                          url={selectedTemplate?.resources?.component}
+                          adjustFontSize={false}
+                          slide={slide}
+                          mediaData={mediaData}
+                          themeData={
+                            selectedTheme?.length > 0 ? selectedTheme[0] : 0
+                          }
+                          showPreview
+                          closeButton
+                          closeCallback={() => setPreviewOverlayVisible(false)}
+                        />
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </Col>
           )}
         </Row>
-        <div className="preview-button-container">
-          <button
-            type="button"
-            className="preview-button bg-light"
-            onClick={() =>
-              changeShowPreview({ target: { value: !showPreview } })
-            }
-          >
-            {t("slide-form.show-preview-label")}
-          </button>
-          {showPreview && (
-            <RadioButtons
-              label={t("slide-form.horizontal-or-vertical-label")}
-              selected={previewLayout}
-              radioGroupName="vertical_horizontal_mobile"
-              disabled={!showPreview}
-              options={[
-                {
-                  id: "horizontal",
-                  label: t("slide-form.horizontal-label"),
-                },
-                {
-                  id: "vertical",
-                  label: t("slide-form.vertical-label"),
-                },
-              ]}
-              handleChange={onChangePreviewLayout}
-            />
-          )}
-        </div>
-        <ContentFooter>
+        <StickyFooter>
           <Button
             variant="secondary"
             type="button"
             id="cancel_slide"
             onClick={() => navigate("/slide/list")}
-            size="lg"
             className="margin-right-button"
           >
-            {t("slide-form.cancel-button")}
+            {t("cancel-button")}
+          </Button>
+          <Button
+            variant="outline-primary"
+            type="button"
+            onClick={() => checkInputsHandleSubmit(true)}
+            id="save_slide"
+            className="margin-right-button"
+          >
+            {t("save-button")}
           </Button>
           <Button
             variant="primary"
             type="button"
+            id="save_slide_an_close"
+            className="margin-right-button"
             onClick={checkInputsHandleSubmit}
-            id="save_slide"
-            size="lg"
           >
-            {t("slide-form.save-button")}
+            {t("save-button-and-close")}
           </Button>
-        </ContentFooter>
+          <Button
+            variant="success"
+            type="button"
+            onClick={toggleDisplayPreview}
+            id="toggle_display_preview"
+            className="margin-right-button"
+          >
+            {displayPreview ? t("hide-preview") : t("show-preview")}
+          </Button>
+        </StickyFooter>
       </Form>
-    </>
+    </div>
   );
 }
 
@@ -529,6 +555,7 @@ SlideForm.propTypes = {
   }),
   handleInput: PropTypes.func.isRequired,
   handleSubmit: PropTypes.func.isRequired,
+  handleSaveNoClose: PropTypes.func.isRequired,
   headerText: PropTypes.string.isRequired,
   selectTheme: PropTypes.func.isRequired,
   selectedTheme: PropTypes.arrayOf(

@@ -126,7 +126,7 @@ function SlidesList() {
   }, [slidesGetError]);
 
   return (
-    <>
+    <div className="p-3">
       <ContentHeader
         title={t("header")}
         newBtnTitle={t("create-new-slide")}
@@ -145,7 +145,7 @@ function SlidesList() {
           />
         </ContentBody>
       )}
-    </>
+    </div>
   );
 }
 

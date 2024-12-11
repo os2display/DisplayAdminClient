@@ -174,7 +174,7 @@ function MediaList({ fromModal = false, multiple = true }) {
   };
 
   return (
-    <>
+    <div className="p-3">
       <Row className="align-items-center justify-content-between my-3">
         <Col>
           <h1 id="media-list-title">{t("header")}</h1>
@@ -233,7 +233,7 @@ function MediaList({ fromModal = false, multiple = true }) {
         currentPage={page}
         onPageChange={updateUrlAndChangePage}
       />
-    </>
+    </div>
   );
 }
 

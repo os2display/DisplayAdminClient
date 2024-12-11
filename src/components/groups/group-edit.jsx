@@ -1,7 +1,6 @@
 import { React, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-
 import {
   useGetV2ScreenGroupsByIdQuery,
   usePutV2ScreenGroupsByIdMutation,
@@ -103,7 +102,7 @@ function GroupEdit() {
   };
 
   return (
-    <>
+    <div className="p-3">
       {formStateObject && (
         <GroupForm
           group={formStateObject}
@@ -116,7 +115,7 @@ function GroupEdit() {
           loadingMessage={loadingMessage}
         />
       )}
-    </>
+    </div>
   );
 }
 

@@ -62,6 +62,7 @@ function SlideManager({
   const [mediaData, setMediaData] = useState({});
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [selectedTheme, setSelectedTheme] = useState();
+  const [saveWithoutClose, setSaveWithoutClose] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(
     t("loading-messages.loading-slide")
   );
@@ -425,6 +426,11 @@ function SlideManager({
     setLoadingMessage(t("loading-messages.saving-media"));
   };
 
+  const handleSaveNoClose = () => {
+    setSaveWithoutClose(true);
+    handleSubmit();
+  };
+
   /** When the group is saved, the slide will be saved. */
   useEffect(() => {
     if (
@@ -575,7 +581,16 @@ function SlideManager({
   useEffect(() => {
     if (isSaveSuccessPost || isSaveSuccessPut) {
       setSubmitting(false);
-      navigate("/slide/list");
+
+      if (saveWithoutClose) {
+        setSaveWithoutClose(false);
+
+        if (isSaveSuccessPost) {
+          navigate(`/slide/edit/${idFromUrl(postData["@id"])}`);
+        }
+      } else {
+        navigate("/slide/list");
+      }
     }
   }, [isSaveSuccessPut, isSaveSuccessPost]);
 
@@ -589,6 +604,7 @@ function SlideManager({
           handleContent={handleContent}
           handleMedia={handleMedia}
           handleSubmit={handleSubmit}
+          handleSaveNoClose={handleSaveNoClose}
           selectTemplate={selectTemplate}
           selectedTemplate={selectedTemplate}
           mediaData={mediaData}

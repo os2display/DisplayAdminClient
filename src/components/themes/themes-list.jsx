@@ -124,7 +124,7 @@ function ThemesList() {
   }, [themesGetError]);
 
   return (
-    <>
+    <div className="p-3">
       <ContentHeader
         title={t("header")}
         newBtnTitle={t("create-new-theme")}
@@ -146,7 +146,7 @@ function ThemesList() {
           </>
         </ContentBody>
       )}
-    </>
+    </div>
   );
 }
 

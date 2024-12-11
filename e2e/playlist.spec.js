@@ -59,7 +59,7 @@ test.describe("Playlist create tests", () => {
     await expect(
       page.locator(".Toastify").locator(".Toastify__toast--success")
     ).not.toBeVisible();
-    await page.locator("#save_playlist").click();
+    await page.locator("#save_slide_and_close").click();
     await expect(
       page
         .locator(".Toastify")

@@ -129,7 +129,7 @@ function FeedSourcesList() {
   }, [feedSourcesGetError]);
 
   return (
-    <>
+    <div className="p-3">
       <ContentHeader
         title={t("header")}
         newBtnTitle={t("create-new-feed-source")}
@@ -150,7 +150,7 @@ function FeedSourcesList() {
           </>
         </ContentBody>
       )}
-    </>
+    </div>
   );
 }
 

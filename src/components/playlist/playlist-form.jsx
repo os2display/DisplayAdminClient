@@ -14,7 +14,7 @@ import TenantsDropdown from "../util/forms/multiselect-dropdown/tenants/tenants-
  * @param {object} props - The props.
  * @param {object} props.playlist The playlist object to modify in the form.
  * @param {Function} props.handleInput Handles form input.
- * @param {boolean} props.highlightSharedSection - Hightlight section concerning
+ * @param {boolean} props.highlightSharedSection - Highlight section concerning
  *   shared info
  * @returns {object} The playlist form.
  */
@@ -23,7 +23,7 @@ function PlaylistForm({
   highlightSharedSection = false,
   playlist = null,
 }) {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("common", { keyPrefix: "playlist-form" });
   const context = useContext(UserContext);
 
   const { data: tenants } = useGetV2TenantsQuery({
@@ -35,7 +35,7 @@ function PlaylistForm({
       {playlist && tenants && (
         <>
           <ContentBody>
-            <h2 className="h4">{t("playlist-form.schedule-header")}</h2>
+            <h2 className="h4">{t("schedule-header")}</h2>
             <Schedule
               schedules={playlist.schedules}
               onChange={(schedules) =>
@@ -47,7 +47,7 @@ function PlaylistForm({
             id="shared-section"
             highlightSection={highlightSharedSection}
           >
-            <h2 className="h4">{t("playlist-form.share-playlist")}</h2>
+            <h2 className="h4">{t("share-playlist")}</h2>
             <TenantsDropdown
               name="tenants"
               handleTenantSelection={handleInput}
@@ -57,7 +57,7 @@ function PlaylistForm({
               })}
             />
             <Alert className="mt-3 text-dark" variant="warning">
-              {t("playlist-form.warning")}
+              {t("warning")}
             </Alert>
           </ContentBody>
         </>
@@ -68,6 +68,7 @@ function PlaylistForm({
 
 PlaylistForm.propTypes = {
   playlist: PropTypes.shape({
+    "@id": PropTypes.string,
     schedules: PropTypes.arrayOf(
       PropTypes.shape({
         duration: PropTypes.number,

@@ -11,6 +11,7 @@ import {
   displayError,
   displaySuccess,
 } from "../util/list/toast-component/display-toast";
+import idFromUrl from "../util/helpers/id-from-url";
 
 /**
  * The theme manager component.
@@ -47,10 +48,11 @@ function FeedSourceManager({
 
   const [submitting, setSubmitting] = useState(false);
   const [formStateObject, setFormStateObject] = useState({});
+  const [saveWithoutClose, setSaveWithoutClose] = useState(false);
 
   const [
     postV2FeedSources,
-    { error: saveErrorPost, isSuccess: isSaveSuccessPost },
+    { error: saveErrorPost, isSuccess: isSaveSuccessPost, data },
   ] = usePostV2FeedSourcesMutation();
 
   const [
@@ -160,7 +162,16 @@ function FeedSourceManager({
     if (isSaveSuccessPost || isSaveSuccessPut) {
       setSubmitting(false);
       displaySuccess(t("success-messages.saved-feed-source"));
-      navigate("/feed-sources/list");
+
+      if (saveWithoutClose) {
+        setSaveWithoutClose(false);
+
+        if (isSaveSuccessPost) {
+          navigate(`/feed-sources/edit/${idFromUrl(data["@id"])}`);
+        }
+      } else {
+        navigate(`/feed-sources/list`);
+      }
     }
   }, [isSaveSuccessPut, isSaveSuccessPost]);
 
@@ -168,6 +179,11 @@ function FeedSourceManager({
   const handleSubmit = () => {
     setSubmitting(true);
     saveFeedSource();
+  };
+
+  const handleSaveNoClose = () => {
+    setSaveWithoutClose(true);
+    handleSubmit();
   };
 
   /** If the theme is saved with error, display the error message */
@@ -187,6 +203,7 @@ function FeedSourceManager({
           headerText={`${headerText}: ${formStateObject?.title}`}
           handleInput={handleInput}
           handleSubmit={handleSubmit}
+          handleSaveNoClose={handleSaveNoClose}
           isLoading={isLoading || submitting}
           loadingMessage={loadingMessage}
           onFeedTypeChange={onFeedTypeChange}

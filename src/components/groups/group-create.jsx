@@ -71,14 +71,16 @@ function GroupCreate() {
   };
 
   return (
-    <GroupForm
-      group={formStateObject}
-      headerText={headerText}
-      handleInput={handleInput}
-      handleSubmit={handleSubmit}
-      isLoading={isSaving}
-      loadingMessage={t("loading-messages.saving-group")}
-    />
+    <div className="p-3">
+      <GroupForm
+        group={formStateObject}
+        headerText={headerText}
+        handleInput={handleInput}
+        handleSubmit={handleSubmit}
+        isLoading={isSaving}
+        loadingMessage={t("loading-messages.saving-group")}
+      />
+    </div>
   );
 }
 

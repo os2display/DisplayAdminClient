@@ -67,7 +67,7 @@ function ActivationCodeActivate() {
   };
 
   return (
-    <>
+    <div className="p-3">
       <LoadingComponent
         isLoading={isSaving}
         loadingMessage={t("loading-messages.saving-activation-code")}
@@ -99,7 +99,7 @@ function ActivationCodeActivate() {
           </Button>
         </ContentFooter>
       </Form>
-    </>
+    </div>
   );
 }
 

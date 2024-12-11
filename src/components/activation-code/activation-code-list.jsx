@@ -185,7 +185,7 @@ function ActivationCodeList() {
   }, [listData]);
 
   return (
-    <>
+    <div className="p-3">
       <ContentHeader
         title={t("header")}
         newBtnTitle={t("create-activation-codes")}
@@ -208,7 +208,7 @@ function ActivationCodeList() {
           )}
         </>
       </ContentBody>
-    </>
+    </div>
   );
 }
 

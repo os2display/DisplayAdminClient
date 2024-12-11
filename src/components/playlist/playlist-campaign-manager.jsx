@@ -56,6 +56,7 @@ function PlaylistCampaignManager({
   const [loadingMessage, setLoadingMessage] = useState("");
   const [highlightSharedSection, setHighlightSharedSection] = useState(false);
   const [savingRelations, setSavingRelations] = useState(false);
+  const [saveWithoutClose, setSaveWithoutClose] = useState(false);
   const isCampaign = location === "campaign";
 
   const [
@@ -243,7 +244,17 @@ function PlaylistCampaignManager({
         .then(() => bindSlides(playlistId, selectedSlides))
         .then(() => displaySuccess(t(`${location}.success-messages.saved`)))
         .finally(() => {
-          navigate(`/${location}/list`);
+          if (saveWithoutClose) {
+            setSaveWithoutClose(false);
+
+            if (isSaveSuccessPost) {
+              navigate(`/${location}/edit/${idFromUrl(data["@id"])}`);
+            }
+          } else {
+            navigate(`/${location}/list`);
+          }
+
+          setSavingRelations(false);
         });
     }
   }, [isSaveSuccessPut, isSaveSuccessPost]);
@@ -326,19 +337,23 @@ function PlaylistCampaignManager({
     }
   };
 
+  const handleSaveNoClose = () => {
+    setSaveWithoutClose(true);
+    handleSubmit();
+  };
+
   return (
     <>
       {formStateObject && (
         <PlaylistCampaignForm
           location={location}
           playlist={formStateObject}
-          headerText={`${headerText}: ${
-            formStateObject && formStateObject.title
-          }`}
+          headerText={`${headerText}: ${formStateObject?.title}`}
           isLoading={savingPlaylists || savingRelations || isLoading}
           loadingMessage={loadingMessage}
           handleInput={handleInput}
           handleSubmit={handleSubmit}
+          handleSaveNoClose={handleSaveNoClose}
           slideId={slideId}
           isCampaign={location === "campaign"}
         >

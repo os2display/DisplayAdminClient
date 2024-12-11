@@ -65,10 +65,12 @@ function Select({
   /* eslint-disable jsx-a11y/anchor-is-valid */
   return (
     <FormGroup className={formGroupClasses}>
-      <label htmlFor={name} className="form-label">
-        {label}
-        {required && " *"}
-      </label>
+      {label && (
+        <label htmlFor={name} className="form-label">
+          {label}
+          {required && " *"}
+        </label>
+      )}
       {tooltip !== null && (
         <>
           <a data-tooltip-id={`tooltip-${name}`}>
@@ -118,7 +120,7 @@ Select.propTypes = {
   disabled: PropTypes.bool,
   tooltip: PropTypes.string,
   errors: PropTypes.arrayOf(PropTypes.string),
-  label: PropTypes.string.isRequired,
+  label: PropTypes.string,
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

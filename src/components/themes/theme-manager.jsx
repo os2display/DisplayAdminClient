@@ -12,6 +12,7 @@ import {
   displaySuccess,
   displayError,
 } from "../util/list/toast-component/display-toast";
+import idFromUrl from "../util/helpers/id-from-url";
 
 /**
  * The theme manager component.
@@ -43,6 +44,7 @@ function ThemeManager({
   const [loadingMessage, setLoadingMessage] = useState(
     t("loading-messages.loading-theme")
   );
+  const [saveWithoutClose, setSaveWithoutClose] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [formStateObject, setFormStateObject] = useState({
@@ -53,8 +55,10 @@ function ThemeManager({
     css: "",
   });
 
-  const [postV2Themes, { error: saveErrorPost, isSuccess: isSaveSuccessPost }] =
-    usePostV2ThemesMutation();
+  const [
+    postV2Themes,
+    { error: saveErrorPost, isSuccess: isSaveSuccessPost, data },
+  ] = usePostV2ThemesMutation();
 
   const [
     PutV2ThemesById,
@@ -173,7 +177,16 @@ function ThemeManager({
     if (isSaveSuccessPost || isSaveSuccessPut) {
       setSubmitting(false);
       displaySuccess(t("success-messages.saved-theme"));
-      navigate("/themes/list");
+
+      if (saveWithoutClose) {
+        setSaveWithoutClose(false);
+
+        if (isSaveSuccessPost) {
+          navigate(`/themes/edit/${idFromUrl(data["@id"])}`);
+        }
+      } else {
+        navigate(`/themes/list`);
+      }
     }
   }, [isSaveSuccessPut, isSaveSuccessPost]);
 
@@ -186,6 +199,11 @@ function ThemeManager({
     } else {
       saveTheme();
     }
+  };
+
+  const handleSaveNoClose = () => {
+    setSaveWithoutClose(true);
+    handleSubmit();
   };
 
   /** If the theme is saved with error, display the error message */
@@ -205,6 +223,7 @@ function ThemeManager({
           headerText={`${headerText}: ${formStateObject?.title}`}
           handleInput={handleInput}
           handleSubmit={handleSubmit}
+          handleSaveNoClose={handleSaveNoClose}
           isLoading={isLoading || submitting}
           loadingMessage={loadingMessage}
         />

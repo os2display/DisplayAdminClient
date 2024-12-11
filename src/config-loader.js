@@ -30,6 +30,7 @@ const ConfigLoader = {
               resolve({
                 api: "/api/",
                 touchButtonRegions: false,
+                preview: null,
                 loginMethods: [
                   {
                     type: "oidc",

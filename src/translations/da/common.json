@@ -287,7 +287,8 @@
     "feed-source-name-label": "Navn",
     "feed-source-description-label": "Beskrivelse",
     "feed-source-feed-type-label": "Type",
-    "save-button": "Gem datakilde",
+    "save-button": "Gem datakilde og luk",
+    "save-without-close-button": "Gem datakilde",
     "cancel-button": "Annuller"
   },
   "media-list": {
@@ -367,6 +368,8 @@
     }
   },
   "slide-form": {
+    "preview-orientation-portrait": "Portræt (9:16)",
+    "preview-orientation-landscape": "Landskab (16:9)",
     "slide-template-selected": "Skabelon",
     "template-error": "Der skete en fejl da skabelonen skulle hentes:",
     "remember-template-error": "Husk at tilknytte en skabelon til dit slide",
@@ -375,13 +378,14 @@
     "touch-region-button-text-helptext": "Her kan du sætte knapteksten, hvis slidet indgår i en touch region, hvor slides bliver vist som knapper der kan åbnes.",
     "add-slide-to-playlists": "Tilføj slide til spillelister",
     "add-playlists-help-text": "For at se mulige spillelister, skal du fremsøge dem pr navn. Dette slide vil blive placeret i slutningen af spillelisten.",
-    "preview-in-full-screen": "Åben preview i fuld skærm",
+    "preview-in-full-screen": "Fuld skærm",
     "horizontal-or-vertical-label": "Vælg preview-format",
     "horizontal-label": "16:9",
     "vertical-label": "9:16",
     "show-preview-label": "Vis preview af slide",
     "preview-slide-title": "Preview af slide du er ved at konfigurere",
     "save-button": "Gem slide",
+    "save-button-and-close": "Gem slide og luk",
     "cancel-button": "Annuller",
     "slide-name-label": "Slidets navn",
     "slide-name-placeholder": "Udfyld slides navn",
@@ -391,6 +395,10 @@
     "slide-from-label": "Udgiv fra",
     "slide-to-label": "Udgiv til",
     "slide-theme-label": "Slidets tema",
+    "slide-preview": "Levende visning",
+    "slide-preview-about": "Bemærk! Ændringer bliver først vist i forhåndsvisningen efter slidet er gemt.",
+    "show-preview": "Åbn forhåndsvisning",
+    "hide-preview": "Luk forhåndsvisning",
     "slide-publish-title": "Begræns udgivelse",
     "publish-helptext": "Som udgangspunkt er indhold udgivet. Når udgiv fra/til er udfyldt, begrænser det udgivelsesperioden for indholdselementet.",
     "theme": "Tema"
@@ -401,7 +409,8 @@
     "theme-description-label": "Temaets beskrivelse",
     "css-header": "Temaets CSS",
     "theme-css-label": "Temaets CSS",
-    "save-button": "Gem tema",
+    "save-button": "Gem tema og luk",
+    "save-without-close-button": "Gem tema",
     "cancel-button": "Annuller"
   },
   "group-form": {
@@ -534,12 +543,25 @@
   "playlist-form": {
     "schedule-header": "Planlægning",
     "share-playlist": "Del denne spilleliste",
-    "warning": "Vær opmærksom på, at ved at dele en spilleliste kan modtageren sætte den på en skærm men ikke ændre i den. Alt indholdet på spillelisten (slides, medier, temaer) bliver tilgængeligt for modtagerens skærmklient."
+    "warning": "Vær opmærksom på, at ved at dele en spilleliste kan modtageren sætte den på en skærm men ikke ændre i den. Alt indholdet på spillelisten (slides, medier, temaer) bliver tilgængeligt for modtagerens skærmklient.",
+    "playlist-preview": "Forhåndsvisning",
+    "playlist-preview-open": "Åbn",
+    "playlist-preview-close": "Luk",
+    "playlist-preview-about": "Bemærk! Ændringer bliver først vist i forhåndsvisningen efter spillelisten er gemt."
   },
   "playlist-campaign-form": {
+    "preview-orientation-portrait": "Portræt (9:16)",
+    "preview-orientation-landscape": "Landskab (16:9)",
     "title-about": "Om spillelisten",
     "title-slides": "Tilknyttede slides",
     "save-button": "Gem",
+    "save-button-and-close": "Gem og luk",
+    "show-preview": "Åbn forhåndsvisning",
+    "hide-preview": "Luk forhåndsvisning",
+    "preview-in-full-screen": "Fuld skærm",
+    "playlist-preview": "Forhåndsvisning",
+    "playlist-preview-small-about": "Gem for at opdatere indhold.",
+    "playlist-preview-about": "Bemærk! Ændringer bliver først vist i forhåndsvisningen efter spillelisten er gemt.",
     "cancel-button": "Annuller",
     "playlist-name-label": "Spillelistens navn",
     "playlist-name-placeholder": "Udfyld spillelistens navn",
@@ -774,7 +796,20 @@
     "screen-size-of-screen-label": "Størrelse på skærmen",
     "screen-size-of-screen-placeholder": "Angiv størrelsen på skærmen",
     "screen-resolution-label": "Skærmens opløsning",
-    "screen-orientation-label": "Skærmens orientering"
+    "screen-orientation-label": "Skærmens orientering",
+    "screen-preview": "Forhåndsvisning",
+    "screen-preview-open": "Åbn",
+    "screen-preview-close": "Luk",
+    "screen-preview-small-about": "Gem for at opdatere indhold.",
+    "screen-preview-about": "Bemærk! Ændringer bliver først vist i forhåndsvisningen efter skærmen er gemt.",
+    "save-button-and-close": "Gem og luk",
+    "show-preview": "Åbn forhåndsvisning",
+    "hide-preview": "Luk forhåndsvisning",
+    "preview-orientation-portrait": "Portræt (9:16)",
+    "preview-orientation-landscape": "Landskab (16:9)",
+    "preview-in-full-screen": "Fuld skærm",
+    "preview-small-about": "Gem for at opdatere indhold.",
+    "preview": "Forhåndsvisning"
   },
   "nav-items": {
     "shared-playlists": "Delte spillelister",

@@ -1,5 +1,5 @@
 import { React } from "react";
-import { Button, FormLabel } from "react-bootstrap";
+import { Button, FormLabel, Row, Col } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
@@ -7,9 +7,9 @@ import Form from "react-bootstrap/Form";
 import LoadingComponent from "../util/loading-component/loading-component";
 import FormInputArea from "../util/forms/form-input-area";
 import ContentBody from "../util/content-body/content-body";
-import ContentFooter from "../util/content-footer/content-footer";
 import FormInput from "../util/forms/form-input";
 import ImageUploader from "../util/image-uploader/image-uploader";
+import StickyFooter from "../util/sticky-footer";
 
 /**
  * The theme form component.
@@ -18,6 +18,7 @@ import ImageUploader from "../util/image-uploader/image-uploader";
  * @param {object} props.theme The theme object to modify in the form.
  * @param {Function} props.handleInput Handles form input.
  * @param {Function} props.handleSubmit Handles form submit.
+ * @param {Function} props.handleSaveNoClose Handles form submit without close.
  * @param {string} props.headerText Headline text.
  * @param {boolean} props.isLoading Indicator of whether the form is loading
  * @param {string} props.loadingMessage The loading message for the spinner
@@ -26,81 +27,91 @@ import ImageUploader from "../util/image-uploader/image-uploader";
 function ThemeForm({
   handleInput,
   handleSubmit,
+  handleSaveNoClose,
   headerText,
   isLoading = false,
   loadingMessage = "",
   theme = null,
 }) {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("common", { keyPrefix: "theme-form" });
   const navigate = useNavigate();
 
   return (
-    <>
+    <div>
+      <LoadingComponent isLoading={isLoading} loadingMessage={loadingMessage} />
       <Form>
-        <LoadingComponent
-          isLoading={isLoading}
-          loadingMessage={loadingMessage}
-        />
-        <h1 id="themeTitle">{headerText}</h1>
-        <ContentBody>
-          <FormInput
-            name="title"
-            type="text"
-            label={t("theme-form.theme-name-label")}
-            value={theme.title}
-            onChange={handleInput}
-          />
-          <FormInputArea
-            name="description"
-            type="text"
-            label={t("theme-form.theme-description-label")}
-            value={theme.description}
-            onChange={handleInput}
-          />
-        </ContentBody>
-        <ContentBody>
-          <h2 className="h4">{t("theme-form.css-header")}</h2>
-          <FormInputArea
-            name="cssStyles"
-            type="text"
-            label={t("theme-form.theme-css-label")}
-            value={theme.cssStyles}
-            onChange={handleInput}
-          />
-          <FormLabel htmlFor="logo" className="mt-5">
-            {t("theme-form.logo-title")}
-          </FormLabel>
-          <ImageUploader
-            multipleImages={false}
-            handleImageUpload={handleInput}
-            inputImage={theme.logo}
-            name="logo"
-            showLibraryButton
-          />
-        </ContentBody>
-        <ContentFooter>
+        <Row className="m-2">
+          <h1 id="themeTitle">{headerText}</h1>
+          <Col>
+            <ContentBody>
+              <FormInput
+                name="title"
+                type="text"
+                label={t("theme-name-label")}
+                value={theme.title}
+                onChange={handleInput}
+              />
+              <FormInputArea
+                name="description"
+                type="text"
+                label={t("theme-description-label")}
+                value={theme.description}
+                onChange={handleInput}
+              />
+            </ContentBody>
+            <ContentBody>
+              <h2 className="h4">{t("css-header")}</h2>
+              <FormInputArea
+                name="cssStyles"
+                type="text"
+                label={t("theme-css-label")}
+                value={theme.cssStyles}
+                onChange={handleInput}
+              />
+              <FormLabel htmlFor="logo" className="mt-5">
+                {t("logo-title")}
+              </FormLabel>
+              <ImageUploader
+                multipleImages={false}
+                handleImageUpload={handleInput}
+                inputImage={theme.logo ?? null}
+                name="logo"
+                showLibraryButton
+              />
+            </ContentBody>
+          </Col>
+        </Row>
+
+        <StickyFooter>
           <Button
             variant="secondary"
             type="button"
             id="cancel_theme"
             onClick={() => navigate("/themes/list")}
-            size="lg"
             className="margin-right-button"
           >
-            {t("theme-form.cancel-button")}
+            {t("cancel-button")}
+          </Button>
+          <Button
+            variant="outline-primary"
+            type="button"
+            id="save_without_close"
+            onClick={handleSaveNoClose}
+            className="margin-right-button"
+          >
+            {t("save-without-close-button")}
           </Button>
           <Button
             variant="primary"
             type="button"
             onClick={handleSubmit}
             id="save_theme"
-            size="lg"
           >
-            {t("theme-form.save-button")}
+            {t("save-button")}
           </Button>
-        </ContentFooter>
+        </StickyFooter>
       </Form>
-    </>
+    </div>
   );
 }
 
@@ -113,6 +124,7 @@ ThemeForm.propTypes = {
   }),
   handleInput: PropTypes.func.isRequired,
   handleSubmit: PropTypes.func.isRequired,
+  handleSaveNoClose: PropTypes.func.isRequired,
   headerText: PropTypes.string.isRequired,
   isLoading: PropTypes.bool,
   loadingMessage: PropTypes.string,

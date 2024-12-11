@@ -219,7 +219,7 @@ test.describe("fest", () => {
 
   test("It loads create datakilde page", async ({ page }) => {
     page.getByText("Opret ny datakilde").click();
-    await expect(page.locator("#save_feed-source")).toBeVisible();
+    await expect(page.locator("#save")).toBeVisible();
   });
 
   test("It display error toast on save error", async ({ page }) => {
@@ -238,7 +238,7 @@ test.describe("fest", () => {
     await expect(
       page.locator(".Toastify").locator(".Toastify__toast--error")
     ).not.toBeVisible();
-    await page.locator("#save_feed-source").click();
+    await page.locator("#save").click();
     await expect(
       page.locator(".Toastify").locator(".Toastify__toast--error")
     ).toBeVisible();
@@ -253,9 +253,9 @@ test.describe("fest", () => {
   });
   test("Cancel create datakilde", async ({ page }) => {
     page.getByText("Opret ny datakilde").click();
-    await expect(page.locator("#cancel_feed-source")).toBeVisible();
-    await page.locator("#cancel_feed-source").click();
-    await expect(page.locator("#cancel_feed-source")).not.toBeVisible();
+    await expect(page.locator("#cancel")).toBeVisible();
+    await page.locator("#cancel").click();
+    await expect(page.locator("#cancel")).not.toBeVisible();
   });
 });
 

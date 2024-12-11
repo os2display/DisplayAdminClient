@@ -138,7 +138,7 @@ function UsersList() {
   }, [listData]);
 
   return (
-    <>
+    <div className="p-3">
       <Row className="align-items-center justify-content-between my-3">
         <Col>
           <h1>{t("header")}</h1>
@@ -161,7 +161,7 @@ function UsersList() {
           )}
         </>
       </ContentBody>
-    </>
+    </div>
   );
 }
 

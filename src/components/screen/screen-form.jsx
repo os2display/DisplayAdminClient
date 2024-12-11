@@ -1,11 +1,12 @@
-import { React, useEffect, useState } from "react";
-import { Button, Form, Spinner, Alert } from "react-bootstrap";
+import { React, useContext, useEffect, useState } from "react";
+import { Button, Form, Spinner, Alert, Col, Row } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useDispatch } from "react-redux";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faExpand } from "@fortawesome/free-solid-svg-icons";
 import ContentBody from "../util/content-body/content-body";
-import ContentFooter from "../util/content-footer/content-footer";
 import FormInput from "../util/forms/form-input";
 import FormInputArea from "../util/forms/form-input-area";
 import SelectGroupsTable from "../util/multi-and-table/select-groups-table";
@@ -20,6 +21,10 @@ import {
 import { displayError } from "../util/list/toast-component/display-toast";
 import FormCheckbox from "../util/forms/form-checkbox";
 import "./screen-form.scss";
+import Preview from "../preview/preview";
+import StickyFooter from "../util/sticky-footer";
+import Select from "../util/forms/select";
+import userContext from "../../context/user-context";
 
 /**
  * The screen form component.
@@ -48,6 +53,7 @@ function ScreenForm({
   screen = null,
 }) {
   const { t } = useTranslation("common", { keyPrefix: "screen-form" });
+  const { config } = useContext(userContext);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [layoutError, setLayoutError] = useState(false);
@@ -59,11 +65,29 @@ function ScreenForm({
     itemsPerPage: 20,
     order: { createdAt: "desc" },
   });
+  const [displayPreview, setDisplayPreview] = useState(null);
+  const [previewOverlayVisible, setPreviewOverlayVisible] = useState(false);
+  const previewOrientationOptions = [
+    {
+      value: "horizontal",
+      title: t("preview-orientation-landscape"),
+      key: "horizontal",
+    },
+    {
+      value: "vertical",
+      title: t("preview-orientation-portrait"),
+      key: "vertical",
+    },
+  ];
+  const [previewOrientation, setPreviewOrientation] = useState(
+    previewOrientationOptions[0].value
+  );
 
   /** Check if published is set */
   const checkInputsHandleSubmit = () => {
     setLayoutError(false);
     let submit = true;
+
     if (!selectedLayout) {
       displayError(t("remember-layout-error"));
       setLayoutError(true);
@@ -171,7 +195,7 @@ function ScreenForm({
   };
 
   return (
-    <>
+    <div>
       {isLoading && (
         <div className="spinner-overlay">
           <Spinner animation="border" className="loading-spinner" />
@@ -179,178 +203,277 @@ function ScreenForm({
         </div>
       )}
       <Form>
-        <h1 id="screenTitle">{headerText}</h1>
-        <ContentBody>
-          <h2 className="h4">{t("screen-about")}</h2>
-          <FormInput
-            name="title"
-            type="text"
-            label={t("screen-name-label")}
-            invalidText={t("screen-name-validation")}
-            helpText={t("screen-name-placeholder")}
-            value={screen.title}
-            onChange={handleInput}
-          />
-          <FormInputArea
-            name="description"
-            type="text"
-            label={t("screen-description-label")}
-            helpText={t("screen-description-placeholder")}
-            value={screen.description}
-            onChange={handleInput}
-          />
-        </ContentBody>
-        {Object.prototype.hasOwnProperty.call(screen, "@id") && (
-          <ContentBody>
-            <h2 className="h4 mb-3">{t("bind-header")}</h2>
-            {screen?.screenUser && (
-              <>
-                <div className="mb-3">
-                  <Alert key="screen-bound" variant="success">
-                    {t("already-bound")}
-                  </Alert>
-                </div>
-                <Button onClick={handleUnbindScreen}>{t("unbind")}</Button>
-              </>
+        <Row className="p-3">
+          <h1 id="screenTitle">{headerText}</h1>
+
+          <Col>
+            <ContentBody>
+              <h2 className="h4">{t("screen-about")}</h2>
+              <FormInput
+                name="title"
+                type="text"
+                label={t("screen-name-label")}
+                invalidText={t("screen-name-validation")}
+                helpText={t("screen-name-placeholder")}
+                value={screen.title}
+                onChange={handleInput}
+              />
+              <FormInputArea
+                name="description"
+                type="text"
+                label={t("screen-description-label")}
+                helpText={t("screen-description-placeholder")}
+                value={screen.description}
+                onChange={handleInput}
+              />
+            </ContentBody>
+            {Object.prototype.hasOwnProperty.call(screen, "@id") && (
+              <ContentBody>
+                <h2 className="h4 mb-3">{t("bind-header")}</h2>
+                {screen?.screenUser && (
+                  <>
+                    <div className="mb-3">
+                      <Alert key="screen-bound" variant="success">
+                        {t("already-bound")}
+                      </Alert>
+                    </div>
+                    <Button onClick={handleUnbindScreen}>{t("unbind")}</Button>
+                  </>
+                )}
+                {!screen?.screenUser && (
+                  <>
+                    <div className="mb-3">
+                      <Alert key="screen-not-bound" variant="danger">
+                        {t("not-bound")}
+                      </Alert>
+                    </div>
+                    <FormInput
+                      onChange={({ target }) => {
+                        setBindKey(target?.value);
+                      }}
+                      name="bindKey"
+                      value={bindKey}
+                      label={t("bindkey-label")}
+                      className="mb-3"
+                    />
+                    <Button onClick={handleBindScreen}>{t("bind")}</Button>
+                  </>
+                )}
+              </ContentBody>
             )}
-            {!screen?.screenUser && (
-              <>
-                <div className="mb-3">
-                  <Alert key="screen-not-bound" variant="danger">
-                    {t("not-bound")}
-                  </Alert>
-                </div>
+            <ContentBody>
+              <h2 className="h4">{t("screen-groups")}</h2>
+              <SelectGroupsTable
+                handleChange={handleInput}
+                name="inScreenGroups"
+                id={groupId}
+                getSelectedMethod={useGetV2ScreensByIdScreenGroupsQuery}
+              />
+            </ContentBody>
+            <ContentBody>
+              <h2 className="h4">{t("screen-location")}</h2>
+              <FormInput
+                name="location"
+                type="text"
+                required
+                label={t("screen-location-label")}
+                helpText={t("screen-location-placeholder")}
+                value={screen.location}
+                onChange={handleInput}
+              />
+            </ContentBody>
+            <ContentBody>
+              <h2 className="h4">{t("screen-settings")}</h2>
+              <div className="mb-3">
                 <FormInput
-                  onChange={({ target }) => {
-                    setBindKey(target?.value);
-                  }}
-                  name="bindKey"
-                  value={bindKey}
-                  label={t("bindkey-label")}
-                  className="mb-3"
-                />
-                <Button onClick={handleBindScreen}>{t("bind")}</Button>
-              </>
-            )}
-          </ContentBody>
-        )}
-        <ContentBody>
-          <h2 className="h4">{t("screen-groups")}</h2>
-          <SelectGroupsTable
-            handleChange={handleInput}
-            name="inScreenGroups"
-            id={groupId}
-            getSelectedMethod={useGetV2ScreensByIdScreenGroupsQuery}
-          />
-        </ContentBody>
-        <ContentBody>
-          <h2 className="h4">{t("screen-location")}</h2>
-          <FormInput
-            name="location"
-            type="text"
-            required
-            label={t("screen-location-label")}
-            helpText={t("screen-location-placeholder")}
-            value={screen.location}
-            onChange={handleInput}
-          />
-        </ContentBody>
-        <ContentBody>
-          <h2 className="h4">{t("screen-settings")}</h2>
-          <div className="mb-3">
-            <FormInput
-              name="size"
-              type="text"
-              label={t("screen-size-of-screen-label")}
-              helpText={t("screen-size-of-screen-placeholder")}
-              value={screen.size}
-              onChange={handleInput}
-            />
-          </div>
-          <MultiSelectComponent
-            label={t("screen-resolution-label")}
-            noSelectedString={t("nothing-selected-resolution")}
-            handleSelection={handleInput}
-            options={resolutionOptions}
-            selected={screen.resolution || []}
-            name="resolution"
-            singleSelect
-          />
-          <MultiSelectComponent
-            label={t("screen-orientation-label")}
-            noSelectedString={t("nothing-selected-orientation")}
-            handleSelection={handleInput}
-            options={orientationOptions}
-            selected={screen.orientation || []}
-            name="orientation"
-            singleSelect
-          />
-        </ContentBody>
-        <ContentBody id="layout-section">
-          <h2 className="h4">{t("screen-layout")}</h2>
-          <div className="row">
-            {layoutOptions && (
-              <div className="col-md-8">
-                <MultiSelectComponent
-                  label={t("screen-layout-label")}
-                  noSelectedString={t("nothing-selected-layout")}
-                  handleSelection={handleAdd}
-                  options={layoutOptions}
-                  helpText={t("search-to-se-possible-selections")}
-                  selected={selectedLayout ? [selectedLayout] : []}
-                  name="layout"
-                  error={layoutError}
-                  singleSelect
+                  name="size"
+                  type="text"
+                  label={t("screen-size-of-screen-label")}
+                  helpText={t("screen-size-of-screen-placeholder")}
+                  value={screen.size}
+                  onChange={handleInput}
                 />
               </div>
-            )}
-            {selectedLayout &&
-              selectedLayout.grid &&
-              selectedLayout.regions && (
-                <GridGenerationAndSelect
-                  screenId={idFromUrl(screen["@id"])}
-                  grid={selectedLayout?.grid}
-                  vertical={isVertical()}
-                  regions={selectedLayout.regions}
-                  handleInput={handleInput}
-                  selectedData={screen.layout}
+              <MultiSelectComponent
+                label={t("screen-resolution-label")}
+                noSelectedString={t("nothing-selected-resolution")}
+                handleSelection={handleInput}
+                options={resolutionOptions}
+                selected={screen.resolution || []}
+                name="resolution"
+                singleSelect
+              />
+              <MultiSelectComponent
+                label={t("screen-orientation-label")}
+                noSelectedString={t("nothing-selected-orientation")}
+                handleSelection={handleInput}
+                options={orientationOptions}
+                selected={screen.orientation || []}
+                name="orientation"
+                singleSelect
+              />
+            </ContentBody>
+            <ContentBody id="layout-section">
+              <h2 className="h4">{t("screen-layout")}</h2>
+              <div className="row">
+                {layoutOptions && (
+                  <div className="col-md-8">
+                    <MultiSelectComponent
+                      label={t("screen-layout-label")}
+                      noSelectedString={t("nothing-selected-layout")}
+                      handleSelection={handleAdd}
+                      options={layoutOptions}
+                      helpText={t("search-to-se-possible-selections")}
+                      selected={selectedLayout ? [selectedLayout] : []}
+                      name="layout"
+                      error={layoutError}
+                      singleSelect
+                    />
+                  </div>
+                )}
+                {selectedLayout &&
+                  selectedLayout.grid &&
+                  selectedLayout.regions && (
+                    <GridGenerationAndSelect
+                      screenId={idFromUrl(screen["@id"])}
+                      grid={selectedLayout?.grid}
+                      vertical={isVertical()}
+                      regions={selectedLayout.regions}
+                      handleInput={handleInput}
+                      selectedData={screen.layout}
+                    />
+                  )}
+              </div>
+            </ContentBody>
+            <ContentBody id="color-scheme-section">
+              <h2 className="h4">{t("enable-color-scheme-change-headline")}</h2>
+              <FormCheckbox
+                name="enableColorSchemeChange"
+                label={t("enable-color-scheme-change")}
+                helpText={t("enable-color-scheme-change-helptext")}
+                value={screen.enableColorSchemeChange}
+                onChange={handleInput}
+              />
+            </ContentBody>
+          </Col>
+
+          {displayPreview && (
+            <Col
+              className="responsive-side shadow-sm p-3 mb-3 bg-body rounded me-3 sticky-top"
+              style={{ top: "20px", maxWidth: "520px" }}
+            >
+              <h2 className="h4">{t("preview")}</h2>
+              <div>
+                <Alert
+                  key="screen-preview-about"
+                  variant="info"
+                  className="mt-3"
+                >
+                  {t("preview-small-about")}
+                </Alert>
+                <div className="preview-actions mb-3">
+                  <Select
+                    isRequired
+                    allowNull={false}
+                    onChange={({ target }) =>
+                      setPreviewOrientation(target.value)
+                    }
+                    required
+                    name="preview-orientation"
+                    options={previewOrientationOptions}
+                    className="m-0"
+                    value={previewOrientation}
+                  />
+
+                  <Button
+                    variant="outline-secondary"
+                    type="button"
+                    id="preview_slide"
+                    onClick={() =>
+                      setPreviewOverlayVisible(!previewOverlayVisible)
+                    }
+                  >
+                    <FontAwesomeIcon icon={faExpand} className="me-3" />
+                    {t("preview-in-full-screen")}
+                  </Button>
+                </div>
+                <Preview
+                  id={idFromUrl(screen["@id"])}
+                  mode="screen"
+                  height={previewOrientation === "horizontal" ? 270 : 480}
+                  width={previewOrientation === "horizontal" ? 480 : 270}
+                  simulatedHeight={
+                    previewOrientation === "horizontal" ? 1080 : 1920
+                  }
+                  simulatedWidth={
+                    previewOrientation === "horizontal" ? 1920 : 1080
+                  }
                 />
+              </div>
+              {previewOverlayVisible && (
+                <div
+                  onClick={() =>
+                    setPreviewOverlayVisible(!previewOverlayVisible)
+                  }
+                  role="presentation"
+                  className="preview-overlay d-flex justify-content-center align-items-center flex-column"
+                >
+                  <Preview id={idFromUrl(screen["@id"])} mode="screen" />
+                  <Alert
+                    key="slide-preview-about"
+                    variant="info"
+                    className="mt-3"
+                  >
+                    {t("screen-preview-about")}
+                  </Alert>
+                </div>
               )}
-          </div>
-        </ContentBody>
-        <ContentBody id="color-scheme-section">
-          <h2 className="h4">{t("enable-color-scheme-change-headline")}</h2>
-          <FormCheckbox
-            name="enableColorSchemeChange"
-            label={t("enable-color-scheme-change")}
-            helpText={t("enable-color-scheme-change-helptext")}
-            value={screen.enableColorSchemeChange}
-            onChange={handleInput}
-          />
-        </ContentBody>
-        <ContentFooter>
+            </Col>
+          )}
+        </Row>
+
+        <StickyFooter>
           <Button
             variant="secondary"
             type="button"
             id="cancel_screen"
             onClick={() => navigate("/screen/list")}
-            size="lg"
             className="margin-right-button"
           >
             {t("cancel-button")}
           </Button>
           <Button
-            variant="primary"
+            variant="outline-primary"
             type="button"
+            className="margin-right-button"
             id="save_screen"
-            size="lg"
             onClick={checkInputsHandleSubmit}
           >
             {t("save-button")}
           </Button>
-        </ContentFooter>
+          <Button
+            variant="primary"
+            type="button"
+            onClick={() => checkInputsHandleSubmit(true)}
+            id="save_slide_an_close"
+            className="margin-right-button"
+          >
+            {t("save-button-and-close")}
+          </Button>
+          {config?.previewClient && (
+            <Button
+              variant="success"
+              type="button"
+              onClick={() => setDisplayPreview(!displayPreview)}
+              id="toggle_display_preview"
+              className="margin-right-button"
+            >
+              {displayPreview ? t("hide-preview") : t("show-preview")}
+            </Button>
+          )}
+        </StickyFooter>
       </Form>
-    </>
+    </div>
   );
 }
 

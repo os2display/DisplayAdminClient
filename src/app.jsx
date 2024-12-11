@@ -213,7 +213,7 @@ function App() {
                       <Col lg={9} xl={10}>
                         <Topbar />
                         {accessConfig && (
-                          <main className="col p-3">
+                          <main>
                             <Routes>
                               <Route path="campaign">
                                 <Route

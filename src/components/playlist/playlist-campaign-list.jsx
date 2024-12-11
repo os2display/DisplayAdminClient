@@ -142,7 +142,7 @@ function PlaylistCampaignList({ location }) {
   }, [playlistsGetError]);
 
   return (
-    <>
+    <div className="p-3">
       <ContentHeader
         title={t(`${location}.header`)}
         newBtnTitle={t(`${location}.create-new`)}
@@ -161,7 +161,7 @@ function PlaylistCampaignList({ location }) {
           />
         </ContentBody>
       )}
-    </>
+    </div>
   );
 }
 
