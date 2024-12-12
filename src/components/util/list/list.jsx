@@ -3,6 +3,7 @@ import { Button, Col, Row } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
+import dayjs from "dayjs";
 import Table from "../table/table";
 import UserContext from "../../../context/user-context";
 import SearchBox from "../search-box/search-box";
@@ -13,6 +14,7 @@ import ListLoading from "../loading-component/list-loading";
 import localStorageKeys from "../local-storage-keys";
 import FormCheckbox from "../forms/form-checkbox";
 import ListContext from "../../../context/list-context";
+import Select from "../forms/select";
 
 /**
  * @param {object} props - The props.
@@ -22,15 +24,19 @@ import ListContext from "../../../context/list-context";
  * @param {Function} props.handleDelete - For deleting elements in the list.
  *   element with success.
  * @param {boolean} props.displayPublished - Whether to display the published filter
- * @param {Function} props.showCreatedByFilter - Callback for created by filter.
+ * @param {boolean} props.showCreatedByFilter - Callback for created by filter.
  * @param {boolean} props.displaySearch - Should search be displayed.
+ * @param {boolean} props.enableScreenStatus - Should screen status be displayed?
+ * @param {boolean} props.isFetching - Is fetching.
  * @returns {object} The List.
  */
 function List({
   data,
   columns,
   totalItems,
+  enableScreenStatus,
   showCreatedByFilter = true,
+  isFetching = false,
   handleDelete = null,
   displayPublished = false,
   displaySearch = true,
@@ -42,6 +48,8 @@ function List({
     page: { set: setPage },
     createdBy: { set: setCreatedBy },
     isPublished: { set: setIsPublished },
+    exists: { set: setExists },
+    screenUserLatestRequest: { set: setScreenUserLatestRequest },
   } = useContext(ListContext);
   const {
     email: { get: email },
@@ -52,16 +60,15 @@ function List({
   const { search } = useLocation();
   const searchParams = new URLSearchParams(search).get("search");
   const pageParams = new URLSearchParams(search).get("page");
-
-  let createdByParams;
-  if (showCreatedByFilter) {
-    createdByParams = new URLSearchParams(search).get("createdBy");
-  }
-
-  let publishedParams;
-  if (displayPublished) {
-    publishedParams = new URLSearchParams(search).get("published");
-  }
+  const createdByParams = showCreatedByFilter
+    ? new URLSearchParams(search).get("createdBy")
+    : undefined;
+  const publishedParams = displayPublished
+    ? new URLSearchParams(search).get("published")
+    : undefined;
+  const screenStatusParam = enableScreenStatus
+    ? new URLSearchParams(search).get("screenStatus")
+    : undefined;
 
   // At least one row must be selected for deletion.
   const disableDeleteButton = !selected.length > 0;
@@ -76,6 +83,11 @@ function List({
       const published = publishedParams || "all";
       params.delete("published");
       params.append("published", published);
+    }
+
+    if (enableScreenStatus) {
+      params.delete("screenStatus");
+      params.append("screenStatus", screenStatusParam);
     }
 
     // page
@@ -109,12 +121,16 @@ function List({
 
   /**
    * @param {string} dataKey - Which data to delete/update
-   * @param {object} value - The update value
+   * @param {string | null} value - The update value
    */
   const updateUrlParams = (dataKey, value) => {
     const params = new URLSearchParams(search);
     params.delete(dataKey);
-    params.append(dataKey, value);
+
+    if (value !== null) {
+      params.append(dataKey, value);
+    }
+
     navigate({
       search: params.toString(),
     });
@@ -128,6 +144,7 @@ function List({
     params.append("search", newSearchText);
     params.delete("page");
     params.append("page", 1);
+
     navigate({
       search: params.toString(),
     });
@@ -159,6 +176,10 @@ function List({
   const deleteHandler = () => {
     updateUrlAndChangePage(1);
     handleDelete();
+  };
+
+  const onScreenStatus = ({ target }) => {
+    updateUrlParams("screenStatus", target.value);
   };
 
   /** Sets page from url using callback */
@@ -199,6 +220,30 @@ function List({
     }
   }, [publishedParams]);
 
+  useEffect(() => {
+    if (screenStatusParam) {
+      const anHourAgo = dayjs().startOf("hour").subtract(1, "hours");
+
+      switch (screenStatusParam) {
+        case "active":
+          setExists({ screenUser: true });
+          setScreenUserLatestRequest({ after: anHourAgo.valueOf() });
+          break;
+        case "inactive":
+          setExists({ screenUser: true });
+          setScreenUserLatestRequest({ before: anHourAgo.valueOf() });
+          break;
+        case "not-connected":
+          setExists({ screenUser: false });
+          setScreenUserLatestRequest(null);
+          break;
+        default:
+          setExists(null);
+          setScreenUserLatestRequest(null);
+      }
+    }
+  }, [screenStatusParam]);
+
   return (
     <>
       <Row className="my-2">
@@ -208,6 +253,38 @@ function List({
           )}
         </Col>
         <>
+          {enableScreenStatus && (
+            <Col md="auto">
+              <Select
+                onChange={onScreenStatus}
+                name="screenStatus"
+                allowNull
+                options={[
+                  {
+                    title: t("screen-status.all"),
+                    value: "all",
+                    key: "screen-status.all",
+                  },
+                  {
+                    title: t("screen-status.active"),
+                    value: "active",
+                    key: "screen-status.active",
+                  },
+                  {
+                    title: t("screen-status.inactive"),
+                    value: "inactive",
+                    key: "screen-status.inactive",
+                  },
+                  {
+                    title: t("screen-status.not-connected"),
+                    value: "not-connected",
+                    key: "screen-status.not-connected",
+                  },
+                ]}
+                value={screenStatusParam}
+              />
+            </Col>
+          )}
           {displayPublished && publishedParams && (
             <Col md="auto">
               <>
@@ -271,13 +348,15 @@ function List({
         </Col>
       </Row>
       <Row />
-      <Table data={data} columns={columns} />
-      <Pagination
-        itemsCount={totalItems}
-        pageSize={pageSize}
-        currentPage={parseInt(pageParams, 10)}
-        onPageChange={updateUrlAndChangePage}
-      />
+      <Table data={data} columns={columns} isFetching={isFetching} />
+      {!isFetching && (
+        <Pagination
+          itemsCount={totalItems}
+          pageSize={pageSize}
+          currentPage={parseInt(pageParams, 10)}
+          onPageChange={updateUrlAndChangePage}
+        />
+      )}
     </>
   );
 }
@@ -292,6 +371,8 @@ List.propTypes = {
   displayPublished: PropTypes.bool,
   showCreatedByFilter: PropTypes.bool,
   displaySearch: PropTypes.bool,
+  enableScreenStatus: PropTypes.bool,
+  isFetching: PropTypes.bool,
 };
 
 export default ListLoading(List);

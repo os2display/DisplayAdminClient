@@ -443,6 +443,8 @@ export const api = createApi({
           page: queryArg.page,
           itemsPerPage: queryArg.itemsPerPage,
           search: queryArg.search,
+          exists: queryArg.exists,
+          "screenUser.latestRequest": queryArg["screenUser.latestRequest"],
           createdBy: queryArg.createdBy,
           modifiedBy: queryArg.modifiedBy,
           order: queryArg.order,
@@ -1205,6 +1207,15 @@ export type GetV2ScreensApiArg = {
   itemsPerPage?: string;
   /** Search on both location and title */
   search?: string;
+  exists?: {
+    screenUser?: boolean;
+  };
+  "screenUser.latestRequest"?: {
+    before?: string;
+    strictly_before?: string;
+    after?: string;
+    strictly_after?: string;
+  };
   createdBy?: {
     ""?: string[];
   };

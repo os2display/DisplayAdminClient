@@ -11,24 +11,32 @@ import useModal from "../../../context/modal-context/modal-context-hook";
  * @param {string} props.redirectTo - The url for redirecting in the info modal.
  * @param {string} props.modalTitle - The info modal title.
  * @param {string} props.dataKey The data key for mapping the data.
+ * @param {number} props.delayApiCall Delay the calling of the api.
  * @returns {object} - The list button.
  */
 function ListButton({
-  apiCall = () => {},
-  dataKey = "",
   redirectTo,
   displayData,
   modalTitle,
+  delayApiCall = 0,
+  apiCall = () => {},
+  dataKey = "",
 }) {
   const { setModal } = useModal();
   const [label, setLabel] = useState("");
+  const [getData, setGetData] = useState(false);
+
   let data;
+
   if (!Array.isArray(displayData)) {
-    data = apiCall({
-      id: idFromUrl(displayData),
-      page: 1,
-      itemsPerPage: 0,
-    });
+    data = apiCall(
+      {
+        id: idFromUrl(displayData),
+        page: 1,
+        itemsPerPage: 0,
+      },
+      { skip: !getData }
+    );
   }
 
   useEffect(() => {
@@ -49,6 +57,16 @@ function ListButton({
       setLabel("");
     };
   }, [data]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setGetData(true);
+    }, delayApiCall);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, []);
 
   return (
     <>
@@ -96,6 +114,7 @@ ListButton.propTypes = {
   dataKey: PropTypes.string,
   modalTitle: PropTypes.string.isRequired,
   redirectTo: PropTypes.string.isRequired,
+  delayApiCall: PropTypes.number,
 };
 
 export default ListButton;

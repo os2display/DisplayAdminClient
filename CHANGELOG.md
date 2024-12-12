@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- [#274](https://github.com/os2display/display-admin-client/pull/274)
+  - Added screen status to screen list.
+  - Refactored screen status on screen edit.
+  - Change campaign icon in screen list to boolean text.
 - [#273](https://github.com/os2display/display-admin-client/pull/273)
   - Fixed calendar api feed source config endpoint.
 - [#272](https://github.com/os2display/display-admin-client/pull/272)

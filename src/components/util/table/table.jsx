@@ -12,6 +12,7 @@ import PaginationButton from "../forms/multiselect-dropdown/pagination-button";
  * @param {Function} props.callback - The callback.
  * @param {string | null} props.label - The label.
  * @param {number | null} props.totalItems - Total data items.
+ * @param {boolean} props.isFetching - Fetching items.
  * @returns {object} The table.
  */
 function Table({
@@ -20,6 +21,7 @@ function Table({
   label = null,
   callback = null,
   totalItems = null,
+  isFetching = false,
 }) {
   const showButton = Number.isInteger(totalItems) && totalItems > data.length;
 
@@ -27,7 +29,7 @@ function Table({
     <div className="table-responsive">
       <table className="table table-hover">
         <TableHeader columns={columns} />
-        <TableBody columns={columns} data={data} />
+        {!isFetching && <TableBody columns={columns} data={data} />}
       </table>
       <PaginationButton
         showButton={showButton}
@@ -46,6 +48,7 @@ Table.propTypes = {
   label: PropTypes.string,
   callback: PropTypes.func,
   totalItems: PropTypes.number,
+  isFetching: PropTypes.bool,
 };
 
 export default Table;

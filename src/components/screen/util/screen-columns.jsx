@@ -1,10 +1,11 @@
 import { React } from "react";
 import { useTranslation } from "react-i18next";
 import ListButton from "../../util/list/list-button";
-import CampaignIcon from "../../screen-list/campaign-icon";
+import CampaignIcon from "./campaign-icon";
 import SelectColumnHoc from "../../util/select-column-hoc";
 import ColumnHoc from "../../util/column-hoc";
 import idFromUrl from "../../util/helpers/id-from-url";
+import ScreenStatus from "../screen-status";
 
 /**
  * Columns for screens lists.
@@ -14,6 +15,7 @@ import idFromUrl from "../../util/helpers/id-from-url";
  * @param {string} props.infoModalRedirect - The url for redirecting in the info modal.
  * @param {string} props.infoModalTitle - The info modal title.
  * @param {string} props.dataKey The data key for mapping the data.
+ * @param {boolean} props.displayStatus Should status be displayed?
  * @returns {object} The columns for the screens lists.
  */
 function getScreenColumns({
@@ -21,19 +23,20 @@ function getScreenColumns({
   infoModalRedirect,
   infoModalTitle,
   dataKey,
+  displayStatus,
 }) {
   const { t } = useTranslation("common", { keyPrefix: "screen-list" });
 
   const columns = [
     {
-      // eslint-disable-next-line react/prop-types
-      content: ({ inScreenGroups }) => (
+      content: (screen) => (
         <ListButton
           apiCall={apiCall}
           redirectTo={infoModalRedirect}
-          displayData={inScreenGroups}
+          displayData={screen.inScreenGroups}
           modalTitle={infoModalTitle}
           dataKey={dataKey}
+          delayApiCall={1000}
         />
       ),
       key: "groups",
@@ -47,9 +50,19 @@ function getScreenColumns({
       key: "campaign",
       label: t("columns.campaign"),
       // eslint-disable-next-line react/destructuring-assignment
-      content: (d) => <CampaignIcon id={idFromUrl(d["@id"])} />,
+      content: (d) => <CampaignIcon id={idFromUrl(d["@id"])} delay={1000} />,
     },
   ];
+
+  if (displayStatus) {
+    columns.push({
+      path: "status",
+      label: t("columns.status"),
+      content: (screen) => {
+        return <ScreenStatus screen={screen} mode="minimal" />;
+      },
+    });
+  }
 
   return columns;
 }

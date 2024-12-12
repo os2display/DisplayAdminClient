@@ -8,11 +8,34 @@ const extendedBaseQuery = async (args, api, extraOptions) => {
 
   const newArgs = { ...args };
 
-  // Rewrite order so the api accepts it.
-  if (newArgs.params?.order) {
-    const key = Object.keys(newArgs.params.order)[0];
-    const value = Object.values(newArgs.params.order)[0];
-    newArgs.params[`order[${key}]`] = `${value}`;
+  if (newArgs?.params) {
+    // Rewrite order so the api accepts it.
+    if (newArgs.params.order) {
+      const key = Object.keys(newArgs.params.order)[0];
+      const value = Object.values(newArgs.params.order)[0];
+      newArgs.params[`order[${key}]`] = `${value}`;
+    }
+
+    delete newArgs.params.order;
+
+    // Rewrite exists so the api accepts it.
+    if (newArgs.params.exists) {
+      const key = Object.keys(newArgs.params.exists)[0];
+      const value = Object.values(newArgs.params.exists)[0];
+      newArgs.params[`exists[${key}]`] = `${value}`;
+    }
+
+    delete newArgs.params.exists;
+
+    if (newArgs.params["screenUser.latestRequest"]) {
+      const key = Object.keys(newArgs.params["screenUser.latestRequest"])[0];
+      const value = Object.values(
+        newArgs.params["screenUser.latestRequest"]
+      )[0];
+      newArgs.params[`screenUser.latestRequest[${key}]`] = `${value}`;
+    }
+
+    delete newArgs.params["screenUser.latestRequest"];
   }
 
   // remove the created by if set to all, as all is not really a filter.

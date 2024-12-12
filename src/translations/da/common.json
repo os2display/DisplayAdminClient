@@ -65,11 +65,29 @@
   "react-table": {
     "remove-row": "Fjern række"
   },
+  "screen-status": {
+    "connect": "Tilkobl",
+    "bind": "Tilkobl skærm",
+    "unbind": "Afkobl skærm",
+    "bindkey-label": "Tilkoblingskode",
+    "not-bound": "Skærmen er ikke tilkoblet.",
+    "already-bound": "Skærmen er tilkoblet",
+    "token-expired": "Skærmens forbindelse er udløbet. Kobl på med en ny kode.",
+    "release-timestamp": "Kodeudgivelsestidspunkt",
+    "release-version": "Version",
+    "latest-request": "Seneste kommunikation",
+    "latest-release": "Seneste udgivelse",
+    "latest-release-timestamp": "Seneste udgivelsestidspunkt",
+    "latest-request-warning": "Skærmen har ikke kommunikeret i mere end en time.",
+    "release-warning": "Skærmen kører ikke seneste udgivelse.",
+    "newest": "Nyeste"
+  },
   "screen-list": {
     "columns": {
       "campaign": "Kampagne",
       "on-groups": "Tilknyttede grupper",
-      "location": "Lokation"
+      "location": "Lokation",
+      "status": "Status"
     },
     "info-modal": {
       "screen-in-groups": "Skærmen er i følgende grupper"
@@ -699,7 +717,11 @@
     "delete-button": "Slet",
     "deselect-all": "Fravælg alle",
     "published": "Udgivet",
-    "not-published": "Ikke udgivet"
+    "not-published": "Ikke udgivet",
+    "screen-status.all": "Alle skærme",
+    "screen-status.active": "Aktive skærme",
+    "screen-status.inactive": "Inaktive skærme",
+    "screen-status.not-connected": "Ikke forbundne skærme"
   },
   "image": {
     "image-currently-uploading": "Billedet du er ved at overføre",
@@ -742,11 +764,6 @@
     "touch-region": "(Touch)",
     "touch-region-helptext": "Touch region: En touch region fungerer anderledes end en normal region. I en touch region bliver slides der er tilføjet lavet til knapper der kan åbnes i fuld skærm.",
     "bind-header": "Tilkobling",
-    "bind": "Tilkobl skærm",
-    "unbind": "Afkobl skærm",
-    "not-bound": "Skærmen er ikke tilkoblet",
-    "already-bound": "Skærmen er tilkoblet",
-    "bindkey-label": "Tilkoblingskode",
     "error-messages": {
       "error-binding": "Der skete en fejl ({{status}}) da skærmen skulle kobles:",
       "error-unbinding": "Der skete en fejl ({{status}}) da skærmen skulle afkobles:"
@@ -1070,6 +1087,10 @@
     "loading-messages": {
       "saving-activation-code": "Opretter aktiveringskode"
     }
+  },
+  "campaign-icon": {
+    "overridden-by-campaign": "Ja",
+    "not-overridden-by-campaign": ""
   },
   "published-state": {
     "active": "Aktiv",

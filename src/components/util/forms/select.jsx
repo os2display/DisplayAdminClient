@@ -9,7 +9,7 @@ import { Tooltip } from "react-tooltip";
 /**
  * @param {object} props The props.
  * @param {string} props.name The name of the select component.
- * @param {string} props.label The label of the select component.
+ * @param {string | null} props.label The label of the select component.
  * @param {string} props.value The selected value.
  * @param {Array} props.options The options for the select component.
  * @param {Function} props.onChange The callback for when something is selected.
@@ -25,7 +25,7 @@ import { Tooltip } from "react-tooltip";
  */
 function Select({
   name,
-  label,
+  label = null,
   options,
   onChange,
   errors = null,
@@ -65,10 +65,12 @@ function Select({
   /* eslint-disable jsx-a11y/anchor-is-valid */
   return (
     <FormGroup className={formGroupClasses}>
-      <label htmlFor={name} className="form-label">
-        {label}
-        {required && " *"}
-      </label>
+      {label && (
+        <label htmlFor={name} className="form-label">
+          {label}
+          {required && " *"}
+        </label>
+      )}
       {tooltip !== null && (
         <>
           <a data-tooltip-id={`tooltip-${name}`}>
@@ -118,7 +120,7 @@ Select.propTypes = {
   disabled: PropTypes.bool,
   tooltip: PropTypes.string,
   errors: PropTypes.arrayOf(PropTypes.string),
-  label: PropTypes.string.isRequired,
+  label: PropTypes.string,
   name: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

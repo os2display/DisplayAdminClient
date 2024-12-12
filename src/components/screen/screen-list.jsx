@@ -18,6 +18,7 @@ import {
   displayError,
 } from "../util/list/toast-component/display-toast";
 import "./screen-list.scss";
+import ConfigLoader from "../../config-loader";
 
 /**
  * The screen list component.
@@ -31,6 +32,8 @@ function ScreenList() {
     searchText: { get: searchText },
     page: { get: page },
     createdBy: { get: createdBy },
+    exists: { get: exists },
+    screenUserLatestRequest: { get: screenUserLatestRequest },
   } = useContext(ListContext);
   const { selected, setSelected } = useModal();
 
@@ -40,6 +43,7 @@ function ScreenList() {
   const [loadingMessage, setLoadingMessage] = useState(
     t("loading-messages.loading-screens")
   );
+  const [showScreenStatus, setShowScreenStatus] = useState(false);
 
   // Delete call
   const [
@@ -51,6 +55,7 @@ function ScreenList() {
   const {
     data,
     error: screensGetError,
+    isFetching,
     isLoading,
     refetch,
   } = useGetV2ScreensQuery({
@@ -58,17 +63,21 @@ function ScreenList() {
     order: { title: "asc" },
     search: searchText,
     createdBy,
+    exists,
+    "screenUser.latestRequest": screenUserLatestRequest,
   });
+
+  useEffect(() => {
+    ConfigLoader.loadConfig().then((config) => {
+      setShowScreenStatus(config.showScreenStatus);
+    });
+  }, []);
 
   useEffect(() => {
     if (data) {
       setListData(data);
     }
   }, [data]);
-
-  useEffect(() => {
-    refetch();
-  }, [searchText, page, createdBy]);
 
   // If the tenant is changed, data should be refetched
   useEffect(() => {
@@ -110,20 +119,21 @@ function ScreenList() {
     setLoadingMessage(t("loading-messages.deleting-screen"));
   };
 
-  // The columns for the table.
-  const columns = ScreenColumns({
-    handleDelete,
-    apiCall: useGetV2ScreensByIdScreenGroupsQuery,
-    infoModalRedirect: "/group/edit",
-    infoModalTitle: t("info-modal.screen-in-groups"),
-  });
-
   // Error with retrieving list of screen
   useEffect(() => {
     if (screensGetError) {
       displayError(t("error-messages.screens-load-error"), screensGetError);
     }
   }, [screensGetError]);
+
+  // The columns for the table.
+  const columns = ScreenColumns({
+    handleDelete,
+    apiCall: useGetV2ScreensByIdScreenGroupsQuery,
+    infoModalRedirect: "/group/edit",
+    infoModalTitle: t("info-modal.screen-in-groups"),
+    displayStatus: showScreenStatus,
+  });
 
   return (
     <>
@@ -142,7 +152,9 @@ function ScreenList() {
               calendarViewPossible
               handleDelete={handleDelete}
               isLoading={isLoading || isDeleting}
+              isFetching={isFetching}
               loadingMessage={loadingMessage}
+              enableScreenStatus={showScreenStatus}
             />
           )}
         </>
