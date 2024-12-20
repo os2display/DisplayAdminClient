@@ -77,6 +77,8 @@ function PosterSelector({
         "singleSelectedOccurrence"
       );
 
+      console.log(occurrenceId, "occurrenceId");
+
       if (eventId !== null) {
         fetch(`${url}?path=${eventId}`, {
           headers,
@@ -91,12 +93,12 @@ function PosterSelector({
       }
 
       if (occurrenceId !== null) {
-        fetch(`${url}?path=${occurrenceId}`, {
+        fetch(`${url}?path=/occurrences/${occurrenceId}`, {
           headers,
         })
           .then((response) => response.json())
           .then((data) => {
-            setSingleSelectedOccurrence(data);
+            setSingleSelectedOccurrence(data["hydra:member"][0]);
           })
           .catch(() => {
             // TODO: Display error.
@@ -119,7 +121,7 @@ function PosterSelector({
       target: {
         id: "singleSelectedOccurrence",
         value: singleSelectedOccurrence
-          ? singleSelectedOccurrence["@id"]
+          ? singleSelectedOccurrence.entityId
           : null,
       },
     });
@@ -233,7 +235,7 @@ function PosterSelector({
 
     switch (singleSearchType) {
       case "title":
-        query = `${query}&name=${singleSearch}`;
+        query = `${query}&title=${singleSearch}`;
         break;
       case "url":
         query = `${query}&url=${singleSearch}`;
@@ -301,7 +303,7 @@ function PosterSelector({
     let query = `?type=${type}&display=options`;
 
     if (inputValue) {
-      query = `${query}&name=${inputValue}`;
+      query = `${query}&title=${inputValue}`;
     }
 
     // TODO: Get this endpoint in a different way.
@@ -390,7 +392,7 @@ function PosterSelector({
                           {singleSelectedEvent && (
                             <div>
                               <strong>Valgt begivenhed:</strong>{" "}
-                              {singleSelectedEvent.name} (
+                              {singleSelectedEvent.title} (
                               {singleSelectedEvent?.organizer?.name})
                             </div>
                           )}
@@ -399,7 +401,7 @@ function PosterSelector({
                               <strong>
                                 {t("poster-selector.chosen-occurrence")}:
                               </strong>{" "}
-                              {formatDate(singleSelectedOccurrence.startDate)} -
+                              {formatDate(singleSelectedOccurrence.start)} -
                               {singleSelectedOccurrence.ticketPriceRange}
                             </div>
                           )}
@@ -595,23 +597,23 @@ function PosterSelector({
                                   onClick={() => handleSelectEvent(searchEvent)}
                                 >
                                   <td>
-                                    {searchEvent?.images?.small && (
+                                    {searchEvent?.imageUrls?.small && (
                                       <img
-                                        src={searchEvent?.images?.small}
-                                        alt={searchEvent?.name}
+                                        src={searchEvent?.imageUrls?.small}
+                                        alt={searchEvent?.title}
                                         style={{ maxWidth: "80px" }}
                                       />
                                     )}
                                   </td>
                                   <td>
-                                    <strong>{searchEvent.name}</strong>
+                                    <strong>{searchEvent.title}</strong>
                                     <br />
                                     {searchEvent.organizer.name}
                                   </td>
                                   <td>
                                     {searchEvent?.occurrences?.length > 0 &&
                                       formatDate(
-                                        searchEvent?.occurrences[0]?.startDate
+                                        searchEvent?.occurrences[0]?.start
                                       )}
                                     {searchEvent?.occurrences?.length > 1 && (
                                       <span>, ...</span>
@@ -657,7 +659,7 @@ function PosterSelector({
                                   {singleSelectedEvent?.occurrences?.map(
                                     (occurrence) => (
                                       <tr>
-                                        <td>{occurrence.startDate}</td>
+                                        <td>{occurrence.start}</td>
                                         <td>{occurrence.ticketPriceRange}</td>
                                         <td>
                                           <Button
@@ -843,7 +845,7 @@ function PosterSelector({
                                   <tr>
                                     <td>
                                       <img
-                                        src={event?.images?.small}
+                                        src={event?.imageUrls?.small}
                                         alt={event.name}
                                         style={{ maxWidth: "80px" }}
                                       />
@@ -861,10 +863,10 @@ function PosterSelector({
                                       {firstOccurrence && (
                                         <>
                                           {`${formatDate(
-                                            firstOccurrence.startDate,
+                                            firstOccurrence.start,
                                             "L"
                                           )} - ${formatDate(
-                                            firstOccurrence.endDate,
+                                            firstOccurrence.end,
                                             "L"
                                           )}`}
                                         </>
