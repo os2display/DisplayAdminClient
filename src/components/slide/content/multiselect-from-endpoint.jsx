@@ -16,6 +16,7 @@ import { displayError } from "../../util/list/toast-component/display-toast";
  * @param {string} props.optionsEndpoint - Endpoint from which to fetch the options.
  * @param {boolean} props.singleSelect - Allow only to select one option.
  * @param {boolean} props.disableSearch - Disable search. Defaults to true.
+ * @param {string | null} props.helpText - Help text.
  * @returns {object} - The FeedSelector component.
  */
 function MultiselectFromEndpoint({
@@ -26,6 +27,7 @@ function MultiselectFromEndpoint({
   value = [],
   disableSearch = true,
   singleSelect = false,
+  helpText = null,
 }) {
   const { t } = useTranslation("common");
   const [options, setOptions] = useState(null);
@@ -98,6 +100,7 @@ function MultiselectFromEndpoint({
           }}
           filterCallback={() => {}}
           label={label ?? t("multiselect.select")}
+          helpText={helpText}
         />
       )}
     </>
@@ -112,6 +115,7 @@ MultiselectFromEndpoint.propTypes = {
   optionsEndpoint: PropTypes.string.isRequired,
   singleSelect: PropTypes.bool,
   disableSearch: PropTypes.bool,
+  helpText: PropTypes.string,
 };
 
 export default MultiselectFromEndpoint;

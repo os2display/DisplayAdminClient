@@ -1,5 +1,5 @@
 import { React } from "react";
-import { Button } from "react-bootstrap";
+import { Alert, Button } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
@@ -13,6 +13,7 @@ import FormInput from "../util/forms/form-input";
 import CalendarApiFeedType from "./templates/calendar-api-feed-type";
 import NotifiedFeedType from "./templates/notified-feed-type";
 import EventDatabaseApiFeedType from "./templates/event-database-feed-type";
+import ColiboFeedType from "./templates/colibo-feed-type";
 
 /**
  * The feed-source form component.
@@ -47,6 +48,10 @@ function FeedSourceForm({
   const { t } = useTranslation("common", { keyPrefix: "feed-source-form" });
   const navigate = useNavigate();
 
+  const typeInOptions =
+    !feedSource?.feedType ||
+    feedSourceTypeOptions.find((el) => el.value === feedSource.feedType);
+
   return (
     <>
       <Form>
@@ -72,18 +77,44 @@ function FeedSourceForm({
             value={feedSource.description}
             onChange={handleInput}
           />
-          <FormSelect
-            name="feedType"
-            formGroupClasses="mb-2"
-            label={t("feed-source-feed-type-label")}
-            value={feedSource.feedType}
-            onChange={onFeedTypeChange}
-            disabled={mode === "PUT"}
-            options={feedSourceTypeOptions}
-          />
+          {typeInOptions && (
+            <FormSelect
+              name="feedType"
+              formGroupClasses="mb-2"
+              label={t("feed-source-feed-type-label")}
+              value={feedSource.feedType}
+              onChange={onFeedTypeChange}
+              disabled={mode === "PUT"}
+              options={feedSourceTypeOptions}
+            />
+          )}
+          {!typeInOptions && (
+            <>
+              <FormInput
+                name="title"
+                formGroupClasses="mb-2"
+                type="text"
+                disabled
+                label={t("feed-source-feed-type-label")}
+                value={feedSource.feedType}
+                onChange={() => {}}
+              />
+              <Alert className="mt-4" variant="warning">
+                {t("feed-type-not-supported")}
+              </Alert>
+            </>
+          )}
 
           {feedSource?.feedType === "App\\Feed\\CalendarApiFeedType" && (
             <CalendarApiFeedType
+              handleInput={handleSecretInput}
+              formStateObject={feedSource.secrets}
+              mode={mode}
+              feedSourceId={feedSource["@id"]}
+            />
+          )}
+          {feedSource?.feedType === "App\\Feed\\ColiboFeedType" && (
+            <ColiboFeedType
               handleInput={handleSecretInput}
               formStateObject={feedSource.secrets}
               mode={mode}
