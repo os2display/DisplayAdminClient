@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- [#276](https://github.com/os2display/display-admin-client/pull/276)
+  - Added Colibo feed type form.
+  - Fixed feed type selector when unsupported type.
 - [#273](https://github.com/os2display/display-admin-client/pull/273)
   - Fixed calendar api feed source config endpoint.
 - [#272](https://github.com/os2display/display-admin-client/pull/272)

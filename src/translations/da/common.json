@@ -261,6 +261,9 @@
       "save-feed-source-error": "Der skete en fejl da feed source skulle gemmes:",
       "load-feed-source-error": "Der skete en fejl da feed source med følgende id: {{id}} skulle hentes:"
     },
+    "colibo-feed-type": {
+      "title": "Colibo"
+    },
     "dynamic-fields": {
       "event-database-api-feed-type": {
         "title": "Eventdatabase API",
@@ -273,13 +276,13 @@
         "redacted-value-input-placeholder": "Skjult værdi"
       },
       "calendar-api-feed-type": {
-        "title": "Kalender feed",
+        "title": "Kalender",
         "locations": "Lokationer",
         "redacted-value-input-placeholder": "Skjult værdi",
         "save-before-locations-can-be-set": "Bemærk! Datakilden skal gemmes før der kan tilkobles lokationer. Gem og åbn datakilden igen."
       },
       "rss-feed-type": {
-        "title": "RSS feed"
+        "title": "RSS"
       }
     }
   },
@@ -287,6 +290,7 @@
     "feed-source-name-label": "Navn",
     "feed-source-description-label": "Beskrivelse",
     "feed-source-feed-type-label": "Type",
+    "feed-type-not-supported": "Typen understøttes ikke af administrationen.",
     "save-button": "Gem datakilde",
     "cancel-button": "Annuller"
   },
@@ -1075,5 +1079,16 @@
     "active": "Aktiv",
     "future": "Fremtidig",
     "expired": "Udløbet"
+  },
+  "colibo-feed-type": {
+    "title": "Colibo feed",
+    "api-base-uri": "API Base URI",
+    "client-id": "Client ID",
+    "client-secret": "Client Secret",
+    "values-info": "Værdierne Client ID og Client Secret findes ved at oprette en API klient i \"Systemadministration\" -> \"API adgangshåndtering\" i Colibo intranet.",
+    "allowed-recipients": "Tilladte modtagergrupper",
+    "redacted-value-input-placeholder": "Skjult værdi",
+    "save-before-recipients-can-be-set": "Bemærk! Datakilden skal gemmes før der kan tilkobles tilladte modtagergrupper. Gem og åbn datakilden igen.",
+    "allowed-recipients-help": "Det er kun disse modtagergrupper, der vil være tilgængelige, når man opretter et slide, der bruger datakilden."
   }
 }

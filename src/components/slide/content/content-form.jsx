@@ -72,7 +72,7 @@ function ContentForm({
         }
 
         returnElement = (
-          <div key={formData.key}>
+          <div key={formData.key} className={formData.formGroupClasses}>
             {formData?.label && (
               <label htmlFor={formData.name} className="form-label">
                 {formData.label}
@@ -123,7 +123,7 @@ function ContentForm({
             errors={formData.required ? errors : null}
             label={formData.label}
             helpText={formData.helpText}
-            value={formStateObject[formData.name]}
+            value={formStateObject[formData.name] ?? formData?.defaultValue}
             onChange={onChange}
             formGroupClasses={formData.formGroupClasses}
           />
